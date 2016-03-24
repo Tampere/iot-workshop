@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>IoT Workshop</title>
+	<style>
+		#graph {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="graph"></canvas>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+
+	<script>
+		var context = document.getElementById('graph').getContext('2d'),
+		    chartData = {
+				labels: [],
+				datasets: [
+					{
+						data: []
+					}
+				]
+			};
+
+		var getDataAsync = function(perpage, sd, ed) {
+			perpage = perpage || 24;
+			sd = sd || "2016-01-24T09:00:00";
+			ed = ed || "2016-01-25T08:00:00";
+
+			var data = $.get('http://dev.avoindata.net/v1/cellmeasurementpoints/5/data?perpage='+perpage+'&sd='+sd+'&ed='+ed)
+				.then(function(data) {
+					$.each(data.data, function(item, value) {
+						chartData.labels.push(value.timestamp);
+						chartData.datasets[0].data.push(value.visitors);
+					});
+
+					new Chart(context).Bar(chartData);
+
+				}, function(error) {
+					console.log(error);
+				});
+		};
+
+		getDataAsync();
+	</script>
+</body>
+</html>
